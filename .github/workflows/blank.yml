@@ -1,0 +1,41 @@
+name: SampleWebApp CICD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    environment: build
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Azure Container Registry Login 
+      uses: Azure/docker-login@v1
+      with:
+        # Container registry server url
+        login-server: dotnetdemo1234.azurecr.io
+        # Container registry username
+        username: ${{ secrets.ACR_USERNAME }}
+        # Container registry password
+        password: ${{ secrets.ACR_PASSWORD }} 
+    
+    - name: Build Docker image
+      run:  | 
+       docker build . -t dotnetdemo1234.azurecr.io/samplewebapp:${{ github.run_id }}
+
+build:
+  runs-on: ubuntu-latest
+  environment: push
+
+  steps:
+  - uses: actions/checkout@v3
+  
+  - name: Push the Docker image
+      run:  |
+       docker push dotnetdemo1234.azurecr.io/samplewebapp:${{ github.run_id }}
